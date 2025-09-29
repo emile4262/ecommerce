@@ -2,6 +2,12 @@ import { ApiOperation, ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsString, MinLength } from "class-validator";
 
 export class CreateUserDto {
+    static accesstoken: string;
+  static mustChangePassword: boolean;
+  static password: any;
+    static firstname(firstname: string, linktoken: string): string {
+      throw new Error('Method not implemented.');
+    }
 
     @ApiProperty({ example: 'John', description: 'entrez votre nom' })
     @IsString()
