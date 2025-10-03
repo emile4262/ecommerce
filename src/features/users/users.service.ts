@@ -11,18 +11,26 @@ import { User } from './entities/user.entity';
 @Injectable()
 export class UsersService {
 
+  
   constructor( private readonly prisma: PrismaService,
      private configService: ConfigService,
   ) {}
+
+  private excludeSensitiveFields(users: Users): Omit<User, 'password' | 'role'> {
+    const { password, ...safeUser } = users;
+    return safeUser;
+  }
   
   async  getAllUsers() {
+
+    
     return this.prisma.users.findMany({
       select: {
         id: true,
         firstName: true,
         lastName: true,
         email: true,
-        // role: true, 
+        role: true, 
         createdAt: true,
         updatedAt: true,
       },
@@ -56,40 +64,34 @@ export class UsersService {
    return users
   }
 
- async createUser(createUserDto: CreateUserDto): Promise<Omit<Users, 'password'>> {
-  const { email, password, firstName, lastName } = createUserDto;
+  async createUser(createUserDto: CreateUserDto): Promise<Omit<User, 'password' | 'role'>> {
+    const { email, password, firstName, lastName, role } = createUserDto;
 
-  const existingUser = await this.prisma.users.findUnique({
-    where: { email },
-  });
+    const existingUser = await this.prisma.users.findUnique({
+      where: { email },
+    });
 
-  if (existingUser) {
-    throw new ConflictException('Cet email est déjà utilisé');
+    if (existingUser) {
+      throw new ConflictException('Cet email est déjà utilisé');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 8);
+    const isAdmin = email === 'bnandoemile@gmail.com';
+
+    const users = await this.prisma.users.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+        role: isAdmin ? 'admin' : 'user',
+        createdAt: new Date(), 
+      },
+    });
+
+    return users
   }
 
-  const hashedPassword = await bcrypt.hash(password, 8);
-  const isAdmin = email === 'brou@gmail.com';
-
-  const user = await this.prisma.users.create({
-    data: {
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-      role: isAdmin ? 'admin' : 'user',
-      createdAt: new Date(),
-    },
-  });
-
-  return {
-    id: user.id,
-    firstName: user.firstName ?? '',
-    lastName: user.lastName ?? '',
-    email: user.email,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-  };
-}
 
 
   async updateUser(id: string, data: UpdateUserDto) {

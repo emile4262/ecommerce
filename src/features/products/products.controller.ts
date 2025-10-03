@@ -3,32 +3,32 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
-@Controller('products')
+@Controller()
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
   create(@Body() createProductDto: CreateProductDto) {
-    return this.productsService.create(createProductDto);
+    return this.productsService.createProduct(createProductDto);
   }
 
-  @Get()
-  findAll() {
-    return this.productsService.findAll();
-  }
+   @Get('all')
+   findProductsService(){
+    return this.productsService.findAllProducts()
+   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(+id);
-  }
+   @Get(':id')
+   getProductsById(@Param('id') id: string) {
+    return this.productsService.getProductById(id)
+   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productsService.update(+id, updateProductDto);
-  }
+   @Patch('update/:id')
+   updateProducts(@Param('id') id: string, @Body()data: UpdateProductDto){
+    return this.productsService.updateProducts(id, data)
+   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(+id);
-  }
+   @Delete('delete/:id')
+   deleteProducts(@Param('id') id: string ){
+    return this.productsService.deleteProducts(id)
+   }
 }
