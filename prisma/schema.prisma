@@ -20,11 +20,25 @@ model Users {
   firstName String?
   lastName  String?
   email     String   @unique
-  role      String   @default("EMPLOYEE")
+  role      String   @default("USERS")
   password  String
   refreshToken        String?   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  otp                 String?
+  otpExpires          DateTime?
+  lastPasswordResetAt DateTime?
   accountLockedUntil  DateTime? 
   failedLoginAttempts Int       @default(0)
+}
+
+model Products {
+  id        String    @id @default(uuid())
+ name   String
+ description  String
+ prix  Float
+ stockInitial Int
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+
 }
