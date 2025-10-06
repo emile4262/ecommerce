@@ -30,6 +30,7 @@ model Users {
   lastPasswordResetAt DateTime?
   accountLockedUntil  DateTime? 
   failedLoginAttempts Int       @default(0)
+  Products  Products[]
 }
 
 model Products {
@@ -38,7 +39,20 @@ model Products {
  description  String
  prix  Float
  stockInitial Int
+ userId          String
+ categoryId      String
  createdAt DateTime @default(now())
  updatedAt DateTime @updatedAt
 
+ category        category       @relation(fields: [categoryId], references: [id])
+  user            Users          @relation(fields: [userId], references: [id])
+
+}
+
+model category {
+  id      String  @id @default(uuid())
+  name    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Products Products[]
 }
