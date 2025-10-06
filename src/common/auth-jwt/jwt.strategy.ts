@@ -15,10 +15,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       secretOrKey: configService.get<string>('JWT_SECRET')!, // ✅ "!" => non null assertion
     });
 
-    console.log(
-      'JWT_SECRET utilisé par JwtStrategy:',
-      this.configService.get<string>('JWT_SECRET'),
-    );
+    // console.log(
+    //   'JWT_SECRET utilisé par JwtStrategy:',
+    //   this.configService.get<string>('JWT_SECRET'),
+    // );
   }
 
   async validate(payload: any) {

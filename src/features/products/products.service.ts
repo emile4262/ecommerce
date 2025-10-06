@@ -23,6 +23,13 @@ constructor(
       `Catégorie avec l'ID ${data.categoryId} non trouvée`,
     );
   }
+  const Users = await this.prisma.users.findUnique({
+    where: {id: data.usersId},
+  })
+
+  if (!Users) {
+     throw new NotFoundException(`utilisateur avec l'ID ${data.usersId} non trouvée`)
+  }
 
   // Vérifier le stock initial
   if (data.stockInitial <= 0) {

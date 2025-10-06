@@ -1,4 +1,10 @@
-import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { 
+  CanActivate, 
+  ExecutionContext, 
+  ForbiddenException, 
+  Injectable, 
+  UnauthorizedException 
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY, UserRole } from '../enum/role.decorateur';
 
@@ -12,7 +18,7 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    // si aucun rôle n'est requis, autoriser l'accès
+    // Si aucun rôle n'est requis, on autorise
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
@@ -20,44 +26,31 @@ export class RolesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    console.log('Requête utilisateur:', user);
-    console.log('Rôles requis:', requiredRoles);
+    // console.log('Requête utilisateur:', user);
+    // console.log('Rôles requis:', requiredRoles);
 
-    // Vérification plus stricte de la présence de l'utilisateur
     if (!user) {
-      console.log('Accès refusé: utilisateur non authentifié');
       throw new UnauthorizedException('Accès interdit : utilisateur non authentifié');
     }
 
-    // Vérification de la présence de l'ID utilisateur
-    if (!user.id) {
-      console.log('Accès refusé: ID utilisateur manquant');
-      throw new UnauthorizedException('Accès interdit : ID utilisateur manquant');
-    }
-
-    // Vérification de la présence du rôle
     if (!user.role) {
-      console.log('Accès refusé: rôle utilisateur manquant');
       throw new ForbiddenException('Accès interdit : rôle utilisateur manquant');
     }
 
-    const userRole = user.role;
-     console.log(`Rôle de l'utilisateur: ${userRole}`);
+    const userRole = user.role.toUpperCase() as UserRole;
+    // console.log(`Rôle de l'utilisateur: ${userRole}`);
 
-    // Vérification que le rôle de l'utilisateur est valide
+    // Vérification que le rôle est valide
     if (!Object.values(UserRole).includes(userRole)) {
-      console.log(`Accès refusé: rôle utilisateur invalide (${userRole})`);
       throw new ForbiddenException('Accès interdit : rôle utilisateur invalide');
     }
 
     const hasRole = requiredRoles.some(role => role === userRole);
 
     if (!hasRole) {
-      console.log(`Accès refusé: rôle requis non trouvé (a: ${userRole}, requis: ${requiredRoles.join(', ')})`);
       throw new ForbiddenException('Accès interdit : rôle insuffisant');
     }
 
-    console.log('Accès autorisé');
     return true;
   }
 }

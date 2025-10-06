@@ -1,75 +1,56 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { Reflector } from '@nestjs/core'; // Ajouter Reflector
-import { HttpException } from '@nestjs/common';
+import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { AuthGuard } from '@nestjs/passport';
 import { IS_PUBLIC_KEY } from '../role.guard/public.decorateur';
-import { UsersService } from 'src/features/users/users.service';
 
-// Importer IS_PUBLIC_KEY
+// Define or import JwtAuthUser interface
+export interface JwtAuthUser {
+  id: number;
+  username: string;
+  role: string;
+  // add other properties as needed
+}
 
 @Injectable()
-export class JwtAuthGuard implements CanActivate {
-  constructor(
-    private jwtService: JwtService,
-    private configService: ConfigService,
-    private userService: UsersService,
+export class JwtAuthGuard extends AuthGuard('jwt') {
+  constructor(private reflector: Reflector) {
+    super();
+  }
 
-    private reflector: Reflector, // Injection du Reflector
-  ) {}
-
-  async canActivate(context: ExecutionContext): Promise<any> {
+  canActivate(context: ExecutionContext) {
+    // Vérifier si la route est marquée comme publique
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
-
+    
     if (isPublic) {
       return true;
     }
+    // Sinon procéder à la vérification du JWT
+    return super.canActivate(context);
+  }
 
-    const request = context.switchToHttp().getRequest();
-    const authHeader = request.headers['authorization'];
-
-    if (!authHeader) {
-      throw new UnauthorizedException('Token manquant');
+  handleRequest<TUser = any>(
+    err: any,
+    user: TUser,
+    info: any,
+    context: ExecutionContext,
+    status?: any,
+  ): TUser {
+    
+    // Si une erreur est survenue ou que l'utilisateur n'existe pas
+    if (err || !user) {
+      throw err || new UnauthorizedException('Token invalide ou expiré');
     }
 
-    const token = authHeader.split(' ')[1];
-
-    let decoded;
-    try {
-      decoded = this.jwtService.verify(token, {
-        secret: this.configService.get('JWT_SECRET'),
-      });
-    } catch (error) {
-      console.error('Erreur de vérification du token JWT:', error);
-      throw new UnauthorizedException('Token invalide ou expiré');
+    // S'assurer que le rôle est inclus dans l'objet user (si applicable)
+    // Vérifier si user a une propriété 'role'
+    if ((user as any).role === undefined) {
+      throw new UnauthorizedException('Information de rôle manquante');
     }
 
-    const user = await this.userService.getUserById(decoded.sub);
-
-    if (!user) {
-      throw new UnauthorizedException('Utilisateur introuvable');
-    }
-
-    // const userAgent = decoded.user_agent;
-
-    // if (userAgent !== user.user_agent) {
-    //   throw new HttpException(
-    //     {
-    //       message: 'User agent non valide',
-    //     },
-    //     410,
-    //   );
-    // }
-
-    request.user = user;
-    return true;
+    return user;
   }
 }
+    
