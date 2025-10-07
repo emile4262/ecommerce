@@ -43,9 +43,10 @@ model Products {
  categoryId      String
  createdAt DateTime @default(now())
  updatedAt DateTime @updatedAt
+ deletedAt DateTime? 
 
  category        category       @relation(fields: [categoryId], references: [id])
-  user            Users          @relation(fields: [userId], references: [id])
+ user            Users          @relation(fields: [userId], references: [id])
 
 }
 

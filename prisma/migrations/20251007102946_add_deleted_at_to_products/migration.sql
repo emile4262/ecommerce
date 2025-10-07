@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "public"."Products" ADD COLUMN     "deletedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

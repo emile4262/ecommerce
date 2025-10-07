@@ -4,6 +4,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
 import { PrismaService } from 'src/common/config/Prisma.service';
 import { Products } from '@prisma/client';
+import { SeachDto } from './dto/search.dto';
 
 @Injectable()
 export class ProductsService {
@@ -70,39 +71,91 @@ constructor(
 }
 
 
-  async  findAllProducts() {
+async findAllProducts(filterDto: SeachDto) {
+   const { search, limit, page, dateCreationDebut, dateCreationFin } = filterDto;
 
-    return this.prisma.products.findMany({
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        prix: true,
-        stockInitial: true,
-        categoryId: true,
-        userId:true
-      },
-    });
-  }
-  
-  async getProductById( id: string) {
-    const products = await this.prisma.products.findUnique({
-      where: {id},
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        prix: true,
-        stockInitial: true,
-        categoryId: true,
-        userId:true
-      },
-    });
-    if (!products){
-      throw new NotFoundException(" cet produit n'existe pas ")
+  const limitNumber = Math.max(1, Number(limit) || 10);
+  const pageNumber = Math.max(1, Number(page) || 1);
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const where: any = {};
+
+  // // Filtre pour supprimer les éléments "deleted"
+  // where.deletedAt = { equals: null };
+
+  // // Filtre de date
+  if (dateCreationDebut || dateCreationFin) {
+    where.createdAt = {};
+    if (dateCreationDebut) {
+      where.createdAt.gte = new Date(dateCreationDebut);
     }
-    return products
+    if (dateCreationFin) {
+      const fin = new Date(dateCreationFin);
+      fin.setHours(23, 59, 59, 999);
+      where.createdAt.lte = fin;
+    }
   }
+
+  // Recherche texte
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
+    ];
+
+    const searchNumber = Number(search);
+    if (!isNaN(searchNumber)) {
+      where.OR.push({ prix: searchNumber });
+      where.OR.push({ stockInitial: searchNumber });
+    }
+  }
+
+  const products = await this.prisma.products.findMany({
+    where,
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      prix: true,
+      stockInitial: true,
+      categoryId: true,
+      userId: true,
+      createdAt: true,
+    },
+    take: limitNumber,
+    skip,
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  // console.log("Requête Prisma", where);
+  // console.log("Résultat", products);
+
+  return products ;
+}
+
+async getProductsById(id: string){
+  const products = await this.prisma.products.findUnique({
+    where: {id},
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      prix: true,
+      stockInitial: true,
+      categoryId: true,
+      userId: true,
+      createdAt: true,
+
+    },
+  });
+  if(!products){
+    throw new NotFoundException("le produits n'existe pas")
+  }
+  return products
+}
+
   
   async updateProducts (id: string, data: UpdateProductDto){
     const products = await this.prisma.products.findUnique({
@@ -123,8 +176,6 @@ constructor(
         stockInitial: true,
         categoryId: true,
         userId:true
-
-
       },
     });
 
