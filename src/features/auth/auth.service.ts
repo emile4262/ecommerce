@@ -165,16 +165,16 @@ export class AuthService {
             <table width="600" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; padding: 30px; border-radius: 8px;">
               <tr>
                 <td align="center" style="font-size: 24px; font-weight: bold; color: #333333;">
-                  Réinitialisation du mot de passe 🔐
+                  Réinitialisation du mot de passe 
                 </td>
               </tr>
               <tr>
                 <td style="padding: 20px 0; font-size: 16px; color: #555555;">
-                  Bonjour ${user.lastName || 'utilisateur'},
+                Bonjour ${user.lastName || 'utilisateur'},
                 </td>
               </tr>
               <tr>
-                <td style="font-size: 16px; color: #555555;">
+                <td style="font-size: 16px; color: #424242ff;">
                   Vous avez demandé à réinitialiser votre mot de passe. Voici votre code de vérification :
                 </td>
               </tr>
@@ -198,7 +198,7 @@ export class AuthService {
               <tr>
                 <td style="padding-top: 30px; font-size: 14px; color: #555555;">
                   Merci,<br/>
-                  <p> L'équipe Boutique SARAH </p>
+                  <p> L'équipe ecommerce </p>
                 </td>
               </tr>
             </table>
@@ -219,7 +219,8 @@ export class AuthService {
   try {
     await transporter.sendMail(mailOptions);
     console.log(`Email OTP envoyé à ${dto.email}`);
-  } catch (error) {
+  } 
+  catch (error) {
     console.error("Erreur lors de l'envoi de l'email :", error);
     throw new BadRequestException("Impossible d'envoyer l'OTP par e-mail");
   }

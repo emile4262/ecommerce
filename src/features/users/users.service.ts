@@ -7,6 +7,8 @@ import { ConfigService } from '@nestjs/config';
 import { randomInt } from 'crypto';
 import { Users } from 'generated/prisma';
 import { User } from './entities/user.entity';
+import { SeachDto } from '../products/dto/search.dto';
+import { contains } from 'class-validator';
 
 @Injectable()
 export class UsersService {
@@ -21,10 +23,48 @@ export class UsersService {
     return safeUser;
   }
   
-  async  getAllUsers() {
+  
+  async  getAllUsers(filterDto:SeachDto ) {
 
-    
-    return this.prisma.users.findMany({
+  const { search, limit, page, dateCreationDebut, dateCreationFin } = filterDto;
+  const limitNumber = Math.max(1, Number(limit) || 10);
+  const pageNumber = Math.max(1, Number(page) || 1);
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const where: any = {};
+
+  // // Filtre pour supprimer les éléments "deleted"
+  // where.deletedAt = { equals: null };
+
+  // // Filtre de date
+  if (dateCreationDebut || dateCreationFin) {
+    where.createdAt = {};
+    if (dateCreationDebut) {
+      where.createdAt.gte = new Date(dateCreationDebut);
+    }
+    if (dateCreationFin) {
+      const fin = new Date(dateCreationFin);
+      fin.setHours(23, 59, 59, 999);
+      where.createdAt.lte = fin;
+    }
+  }
+
+  // Recherche texte
+  if (search) {
+    where.OR = [
+      { firstName: { contains: search, mode: 'insensitive' } },
+      { lastName: { contains: search, mode: 'insensitive' } },
+      {role: {contains: search, mode: 'insensitive'}}
+    ];
+
+    // const searchNumber = Number(search);
+    // if (!isNaN(searchNumber)) {
+    //   where.OR.push({ prix: searchNumber });
+    //   where.OR.push({ stockInitial: searchNumber });
+    // }
+  } 
+    const users = await this.prisma.users.findMany({
+      where,
       select: {
         id: true,
         firstName: true,
@@ -34,7 +74,13 @@ export class UsersService {
         createdAt: true,
         updatedAt: true,
       },
+      take: limitNumber,
+    skip,
+    orderBy: {
+      createdAt: 'desc',
+    },
     });
+    return users
   }
 
   // generateToken() {
