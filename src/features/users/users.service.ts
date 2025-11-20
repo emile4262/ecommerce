@@ -4,24 +4,21 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/common/config/Prisma.service';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
-import { randomInt } from 'crypto';
 import { Users } from 'generated/prisma';
 import { User } from './entities/user.entity';
 import { SeachDto } from '../products/dto/search.dto';
-import { contains } from 'class-validator';
 
 @Injectable()
 export class UsersService {
 
   
   constructor( private readonly prisma: PrismaService,
-     private configService: ConfigService,
   ) {}
 
-  private excludeSensitiveFields(users: Users): Omit<User, 'password' | 'role'> {
-    const { password, ...safeUser } = users;
-    return safeUser;
-  }
+  // private excludeSensitiveFields(users: Users): Omit<User, 'password' | 'role'> {
+  //   const { password, ...safeUser } = users;
+  //   return safeUser;
+  // }
   
   
   async  getAllUsers(filterDto:SeachDto ) {
@@ -83,14 +80,7 @@ export class UsersService {
     return users
   }
 
-  // generateToken() {
-  //   let token = '';
-  //   const length = 40; // Longueur du token, vous pouvez la modifier selon vos besoins
-  //   for (let i = 0; i < length; i++) {
-  //     token += randomInt(0, 10).toString();
-  //   }
-  //   return token;
-  // }
+
 
   async getUserById(id: string){
     const users = await this.prisma.users.findUnique({
@@ -122,7 +112,7 @@ export class UsersService {
     }
 
     const hashedPassword = await bcrypt.hash(password, 8);
-    const isAdmin = email === 'bnandoemile@gmail.com';
+     const ADMIN_EMAILS = ["bnandoemile@gmail.com", "admin@gmail.com"];
 
     const users = await this.prisma.users.create({
       data: {
@@ -130,7 +120,7 @@ export class UsersService {
         lastName,
         email,
         password: hashedPassword,
-        role: isAdmin ? 'admin' : 'user',
+        role: ADMIN_EMAILS ? 'admin' : 'user',
         createdAt: new Date(), 
       },
     });
@@ -185,5 +175,24 @@ export class UsersService {
   return { message: "Utilisateur supprimé avec succès" };
 }
 
+async getUser(id : string): Promise<Partial<User>[]> {
+   const users = await this.prisma.users.findMany({
+    where: { id},
+      select: {
+        id: true, 
+        firstName: true, 
+        lastName: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      }
+   })
+
+   if (!users || users.length === 0) {
+    throw new NotFoundException('Aucun profil utilisateur trouvé');
+  }
+    return users;
+}
 
 }

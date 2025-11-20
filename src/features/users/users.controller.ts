@@ -9,6 +9,7 @@ import { Roles } from 'src/common/role.guard/public.decorateur';
 import { RolesGuard } from 'src/common/role.guard/role.guard';
 import { IsOptional } from 'class-validator';
 import { SeachDto } from '../products/dto/search.dto';
+import { get } from 'http';
 
 
 @Controller('users')
@@ -79,4 +80,13 @@ export class UsersController {
   deleteUser(@Param('id') id: string) {
     return this.usersService.deleteUser(id);
   }
+
+  @Get('put/:id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard) 
+  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN, UserRole.USERS)
+  getUser(@Param('id') id: string) {
+    return this.usersService.getUser(id);
+  }
+
 }
