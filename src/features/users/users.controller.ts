@@ -81,7 +81,7 @@ export class UsersController {
     return this.usersService.deleteUser(id);
   }
 
-  @Get('put/:id')
+  @Get('get/:id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard) 
   @Roles(UserRole.EMPLOYEE, UserRole.ADMIN, UserRole.USERS)
