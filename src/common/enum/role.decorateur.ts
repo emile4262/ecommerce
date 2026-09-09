@@ -10,3 +10,9 @@ export enum UserRole {
 
 }
 
+export enum OrderStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
+

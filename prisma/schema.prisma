@@ -10,50 +10,62 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
-
-
 model Users {
-  id        String    @id @default(uuid())
+  id        String     @id @default(uuid())
   firstName String?
   lastName  String?
-  email     String   @unique
-  role      String   @default("USERS")
+  email     String     @unique
+  role      String     @default("USERS")
   password  String
-  refreshToken        String?   
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  refreshToken String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   otp                 String?
   otpExpires          DateTime?
   lastPasswordResetAt DateTime?
-  accountLockedUntil  DateTime? 
-  failedLoginAttempts Int       @default(0)
+  accountLockedUntil  DateTime?
+  failedLoginAttempts Int @default(0)
+
   Products  Products[]
 }
 
 model Products {
-  id        String    @id @default(uuid())
- name   String
- description  String
- prix  Float
- stockInitial Int
- userId          String
- categoryId      String
- createdAt DateTime @default(now())
- updatedAt DateTime @updatedAt
- deletedAt DateTime? 
+  id           String    @id @default(uuid())
+  name         String
+  description  String
+  prix         Float
+  stockInitial Int
+  userId       String
+  categoryId   String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
- category        category       @relation(fields: [categoryId], references: [id])
- user            Users          @relation(fields: [userId], references: [id])
-
+  /// RELATIONS AU BAS 👇
+  category     category  @relation(fields: [categoryId], references: [id])
+  user         Users     @relation(fields: [userId], references: [id])
+  orders       Order[]
 }
 
 model category {
-  id      String  @id @default(uuid())
-  name    String
+  id        String     @id @default(uuid())
+  name      String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  Products  Products[]
+}
+
+model Order {
+  id        String    @id @default(uuid())
+  quantity  Int
+  total     Int
+  price     Int
+  productId String
+
+  product   Products @relation(fields: [productId], references: [id])
+
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Products Products[]
 }
