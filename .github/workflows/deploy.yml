@@ -1,0 +1,51 @@
+# Nom de votre pipeline affiché sur GitHub
+name: CI/CD Pipeline
+
+# Définition des déclencheurs : ici, le pipeline se lance à chaque push et pull request sur la branche main
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ " " ]
+
+# Définition des tâches (jobs) à exécuter
+jobs:
+  build-and-test:
+    # Définition de l'environnement virtuel (OS)
+    runs-on: ubuntu-latest
+
+    steps:
+      # Étape 1 : Récupérer le code source du dépôt
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      # Étape 2 : Configurer l'environnement (ex: Node.js)
+      - name: Configuration de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      # Étape 3 : Installer les dépendances
+      - name: Installation des dépendances
+        run: npm ci
+
+      # Étape 4 : Lancer les tests unitaires ou le linter
+      - name: Exécution des tests
+        run: npm test
+
+  # Optionnel : Un deuxième job pour le déploiement (qui ne s'exécute que si le build/test réussit)
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    # Restreindre le déploiement uniquement lors d'un push sur main (pas sur les PR)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Étape de déploiement
+        run: |
+          echo "Déploiement en cours sur le serveur de production..."
+          # Ajoutez ici vos commandes de déploiement (SSH, AWS, Docker, etc.)
