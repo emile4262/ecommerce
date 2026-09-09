@@ -49,3 +49,5 @@ jobs:
         run: |
           echo "Déploiement en cours sur le serveur de production..."
           # Ajoutez ici vos commandes de déploiement (SSH, AWS, Docker, etc.)
+env:
+        EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
