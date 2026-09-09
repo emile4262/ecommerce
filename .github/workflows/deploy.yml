@@ -1,12 +1,12 @@
 # Nom de votre pipeline affiché sur GitHub
 name: CI/CD Pipeline
 
-# Définition des déclencheurs : ici, le pipeline se lance à chaque push et pull request sur la branche main
+# Définition des déclencheurs : ici, le pipeline se lance à chaque push et pull request sur la branche develop
 on:
   push:
     branches: [ "develop" ]
   pull_request:
-    branches: [ " " ]
+    branches: [ "develop" ]
 
 # Définition des tâches (jobs) à exécuter
 jobs:
@@ -38,7 +38,7 @@ jobs:
   deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
-    # Restreindre le déploiement uniquement lors d'un push sur main (pas sur les PR)
+    # Restreindre le déploiement uniquement lors d'un push sur develop (pas sur les PR)
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
 
     steps:
