@@ -1,6 +1,8 @@
 # Nom de votre pipeline affiché sur GitHub
-name: CI/CD Pipeline
-
+name: Deploy to Develop
+concurrency:
+  group: deploy-develop
+  cancel-in-progress: true
 # Définition des déclencheurs : ici, le pipeline se lance à chaque push et pull request sur la branche develop
 on:
   push:
