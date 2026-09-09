@@ -2,7 +2,7 @@
 // import { OrdersController } from './orders.controller';
 // import { OrdersService } from './orders.service';
 
-// // TODO: réactiver quand OrdersController sera réimplémenté (aligné sur le modèle Prisma `Order`)
+// TODO: réactiver quand OrdersController sera réimplémenté (aligné sur le modèle Prisma `Order`)
 // describe.skip('OrdersController', () => {
 //   let controller: OrdersController;
 
@@ -19,3 +19,5 @@
 //     expect(controller).toBeDefined();
 //   });
 // });
+
+it.todo('OrdersController: à réimplémenter avec le modèle Prisma Order');
